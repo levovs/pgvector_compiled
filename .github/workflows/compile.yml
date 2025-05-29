@@ -21,17 +21,23 @@ jobs:
     steps:
       - name: Check for new release
         id: check_release
+        shell: bash
         run: |
+          set -e
+          set -x
           latest_tag=$(curl -s "https://api.github.com/repos/${{ env.PGVECTOR_REPO }}/tags" | jq -r '.[0].name')
           echo "Latest tag: ${latest_tag#v}"
           latest_version=${latest_tag#v}
           echo "version=$latest_version" >> $GITHUB_OUTPUT
 
           # Get the current version from the latest release of this repo
-          current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+')
+          current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+' || true)
           echo "Current version: $current_version"
 
-          if [[ "$latest_version" != "$current_version" ]]; then
+          if [[ -z "$current_version" ]]; then
+            echo "Warning: current_version is empty, treating as new version."
+            echo "new_version=true" >> $GITHUB_OUTPUT
+          elif [[ "$latest_version" != "$current_version" ]]; then
             echo "new_version=true" >> $GITHUB_OUTPUT
           else
             echo "new_version=false" >> $GITHUB_OUTPUT
