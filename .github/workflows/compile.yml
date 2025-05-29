@@ -1,12 +1,6 @@
 name: Compile pgvector
 
 on:
-  push:
-    paths:
-      - ".github/workflows/compile.yml"
-  pull_request:
-    paths:
-      - ".github/workflows/compile.yml"
   workflow_dispatch:
 
 env:
